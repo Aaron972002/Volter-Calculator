@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Volter Calculator</title>
+  <style>
+    :root{
+      --bg:#0f1724;
+      --panel:#111826;
+      --accent:#60a5fa;
+      --muted:#9aa6bf;
+      --button:#1f2937;
+      --button-ops:#374151;
+      --danger:#ef4444;
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    }
+    html,body{
+      height:100%;
+      margin:0;
+      background:linear-gradient(180deg,#081025 0%, #08152b 100%);
+      color:#e6eef8;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:24px;
+    }
+    .calculator {
+      width: 360px;
+      max-width: 100%;
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.06));
+      border: 1px solid rgba(255,255,255,0.04);
+      border-radius: 14px;
+      box-shadow: 0 10px 30px rgba(2,6,23,0.6);
+      padding: 18px;
+    }
+    .brand {
+      display:flex;
+      align-items:center;
+      gap:10px;
+      margin-bottom:12px;
+    }
+    .logo {
+      width:36px;
+      height:36px;
+      background:linear-gradient(135deg,var(--accent),#7c3aed);
+      border-radius:8px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:700;
+      color:#04263b;
+      font-size:18px;
+      box-shadow:0 4px 10px rgba(96,165,250,0.12);
+    }
+    .title{
+      font-size:16px;
+      color:var(--muted);
+    }
+    .screen {
+      background: var(--panel);
+      border-radius:10px;
+      padding:14px 12px;
+      margin-bottom:12px;
+      min-height:84px;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      align-items:flex-end;
+      gap:6px;
+      box-shadow: inset 0 -6px 20px rgba(0,0,0,0.4);
+    }
+    .history {
+      font-size:12px;
+      color:var(--muted);
+      opacity:0.9;
+      min-height:14px;
+      width:100%;
+      text-overflow:ellipsis;
+      overflow:hidden;
+      white-space:nowrap;
+    }
+    .output {
+      font-size:28px;
+      font-weight:600;
+      color:#e8f6ff;
+      word-break:break-all;
+      width:100%;
+      text-align:right;
+    }
+
+    .keys {
+      display:grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap:10px;
+    }
+    button.key {
+      background:var(--button);
+      border:0;
+      color:#e6eef8;
+      padding:16px;
+      border-radius:10px;
+      font-size:18px;
+      cursor:pointer;
+      transition:transform .06s ease, box-shadow .06s ease;
+      box-shadow: 0 4px 8px rgba(2,6,23,0.5);
+    }
+    button.key:active { transform: translateY(1px); }
+    .key.op { background: var(--button-ops); color:#fff; font-weight:600; }
+    .key.wide { grid-column: span 2; }
+    .key.danger { background: linear-gradient(180deg,var(--danger),#b91c1c); }
+    .key.zero { grid-column: span 2; text-align:left; padding-left:28px; }
+    .key:hover { filter:brightness(1.06); }
+
+    .helper {
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-bottom:10px;
+      color:var(--muted);
+      font-size:12px;
+    }
+    footer { margin-top:12px; text-align:center; color:var(--muted); font-size:12px; }
+    @media (max-width:420px){
+      .calculator{ width:100%;}
+      .output{ font-size:22px; }
+      .screen{ min-height:72px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="calculator" aria-labelledby="calc-title">
+    <div class="brand">
+      <div class="logo" aria-hidden>V</div>
+      <div id="calc-title" class="title">Volter Calculator</div>
+    </div>
+
+    <div class="screen" role="region" aria-label="Calculator screen">
+      <div id="history" class="history" aria-live="polite"></div>
+      <div id="output" class="output" role="status" aria-live="assertive">0</div>
+    </div>
+
+    <div class="helper">
+      <div>Standard</div>
+      <div style="color:var(--muted);">Use keyboard: numbers, + - * /, Enter, Backspace</div>
+    </div>
+
+    <div class="keys" role="group" aria-label="Calculator keys">
+      <button class="key danger" data-action="clear" aria-label="Clear (Escape)">AC</button>
+      <button class="key" data-action="back" aria-label="Backspace (Backspace)">⌫</button>
+      <button class="key" data-action="percent" aria-label="Percent (%)">%</button>
+      <button class="key op" data-action="/" aria-label="Divide (/)">÷</button>
+
+      <button class="key" data-number="7">7</button>
+      <button class="key" data-number="8">8</button>
+      <button class="key" data-number="9">9</button>
+      <button class="key op" data-action="*" aria-label="Multiply (*)">×</button>
+
+      <button class="key" data-number="4">4</button>
+      <button class="key" data-number="5">5</button>
+      <button class="key" data-number="6">6</button>
+      <button class="key op" data-action="-" aria-label="Subtract (-)">−</button>
+
+      <button class="key" data-number="1">1</button>
+      <button class="key" data-number="2">2</button>
+      <button class="key" data-number="3">3</button>
+      <button class="key op" data-action="+" aria-label="Add (+)">+</button>
+
+      <button class="key zero wide" data-number="0">0</button>
+      <button class="key" data-number=".">.</button>
+      <button class="key op" data-action="=" aria-label="Equals (Enter)">=</button>
+    </div>
+
+    <footer>Built by Volter · Accessible · Keyboard friendly</footer>
+  </main>
+
+  <script>
+    (function(){
+      const outputEl = document.getElementById('output');
+      const historyEl = document.getElementById('history');
+      let current = '0';
+      let previous = '';
+      let operator = null;
+      let justEvaluated = false;
+
+      function updateScreen(){
+        outputEl.textContent = current;
+        historyEl.textContent = previous ? previous + (operator ? ' ' + prettyOp(operator) : '') : '';
+      }
+
+      function prettyOp(op){
+        return op === '*' ? '×' : op === '/' ? '÷' : op;
+      }
+
+      function inputDigit(d){
+        if(justEvaluated){
+          current = (d === '.') ? '0.' : d;
+          justEvaluated = false;
+        } else if (current === '0' && d !== '.') {
+          current = d;
+        } else if (d === '.' && current.includes('.')) {
+          return;
+        } else {
+          current = current + d;
+        }
+        updateScreen();
+      }
+
+      function clearAll(){
+        current = '0';
+        previous = '';
+        operator = null;
+        justEvaluated = false;
+        updateScreen();
+      }
+
+      function backspace(){
+        if (justEvaluated) {
+          clearAll();
+          return;
+        }
+        if(current.length <= 1){
+          current = '0';
+        } else {
+          current = current.slice(0, -1);
+        }
+        updateScreen();
+      }
+
+      function percent(){
+        current = String(parseFloat(current || '0') / 100);
+        updateScreen();
+      }
+
+      function toggleSign(){
+        if (current === '0') return;
+        current = String(parseFloat(current) * -1);
+        updateScreen();
+      }
+
+      function performOp(nextOp){
+        if (operator && !justEvaluated) {
+          // compute previous operator first
+          compute();
+        } else {
+          previous = current;
+        }
+        operator = nextOp;
+        current = '0';
+        justEvaluated = false;
+        updateScreen();
+      }
+
+      function compute(){
+        if(!operator || previous === '') return;
+        try {
+          // Replace safe operator tokens
+          const a = parseFloat(previous || '0');
+          const b = parseFloat(current || '0');
+          let result = 0;
+          switch(operator){
+            case '+': result = a + b; break;
+            case '-': result = a - b; break;
+            case '*': result = a * b; break;
+            case '/': result = b === 0 ? NaN : a / b; break;
+            default: result = NaN;
+          }
+          // Limit floating point length reasonably
+          if (!Number.isFinite(result)) {
+            current = 'Error';
+          } else {
+            current = String(roundResult(result));
+          }
+          previous = '';
+          operator = null;
+          justEvaluated = true;
+          updateScreen();
+        } catch (e) {
+          current = 'Error';
+          updateScreen();
+        }
+      }
+
+      function roundResult(n){
+        // Avoid floating point long tails, keep up to 10 decimal places trimmed
+        return Math.round((n + Number.EPSILON) * 1e10) / 1e10;
+      }
+
+      // Button handlers
+      document.querySelectorAll('.key').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const number = btn.dataset.number;
+          const action = btn.dataset.action;
+          if(number !== undefined){
+            inputDigit(number);
+            return;
+          }
+          switch(action){
+            case 'clear': clearAll(); break;
+            case 'back': backspace(); break;
+            case 'percent': percent(); break;
+            case '+': case '-': case '*': case '/': performOp(action); break;
+            case '=': compute(); break;
+            default: break;
+          }
+        });
+      });
+
+      // Keyboard support
+      window.addEventListener('keydown', (ev) => {
+        if (ev.key >= '0' && ev.key <= '9') {
+          ev.preventDefault();
+          inputDigit(ev.key);
+          return;
+        }
+        if (ev.key === '.') { ev.preventDefault(); inputDigit('.'); return; }
+        if (ev.key === 'Enter' || ev.key === '=') { ev.preventDefault(); compute(); return; }
+        if (ev.key === 'Backspace') { ev.preventDefault(); backspace(); return; }
+        if (ev.key === 'Escape') { ev.preventDefault(); clearAll(); return; }
+        if (ev.key === '%') { ev.preventDefault(); percent(); return; }
+        if (ev.key === '+' || ev.key === '-' || ev.key === '*' || ev.key === '/') {
+          ev.preventDefault();
+          performOp(ev.key);
+          return;
+        }
+      });
+
+      // Init
+      clearAll();
+    })();
+  </script>
+</body>
+</html>
